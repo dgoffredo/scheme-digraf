@@ -224,7 +224,7 @@
 
   (define (digraf-vertices graf)
     ; Return the vertices of 'graf' as a set.
-    (list->set* digraf-vertices-list))
+    (-> graf digraf-vertices-list list->set*))
 
   (define (inward/outward-ref graf vertex which-way)
     ; Return the set of either inward or outward neighbors of 'vertex' in
@@ -303,13 +303,15 @@
     (match-let* ([(from . to) edge]
                  [vertices (digraf-vertices* graf)])
       
-      ; Remove 'to' from the outward vertex-edges of 'from'.
-      (match (hash-table-ref vertices from)
-        [($ vertex-edges inward outward) (set-delete! outward to)])
+      ; Remove 'to' from the outward vertex-edges of 'from', if it's there.
+      (match (hash-table-ref/default vertices from #f)
+        [($ vertex-edges inward outward) (set-delete! outward to)]
+        [#f #f])
 
-      ; Remove 'from' from the inward vertex-edges of 'to'.
-      (match (hash-table-ref vertices to)
-        [($ vertex-edges inward outward) (set-delete! inward from)])
+      ; Remove 'from' from the inward vertex-edges of 'to', if it's there.
+      (match (hash-table-ref/default vertices to #f)
+        [($ vertex-edges inward outward) (set-delete! inward from)]
+        [#f #f])
 
       ; Return 'graf'.
       graf))
@@ -360,7 +362,7 @@
 
   (define (digraf-remove-vertices! graf vertices)
     ; Remove the 'vertices' and their edges from 'graf' and return 'graf'.
-    (fold* (lambda (vertex graf) (digraf-remove-edge! graf vertex))
+    (fold* (lambda (vertex graf) (digraf-remove-vertex! graf vertex))
            graf
            vertices))
 
