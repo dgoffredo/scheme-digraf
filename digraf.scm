@@ -53,7 +53,31 @@
 ; digraf objects are mutable and ready to party.  Mutating methods return their
 ; (mutated in place) digraf argument.
 
+(module set-utils
+  ; convenient extensions to srfi-113 
+  (set*
+   list->set*
+   default-comparator
+   are-equal?)
+
+  (import chicken scheme)
+  (use miscmacros  ; miscellaneous macros (define-syntax-rule)
+       srfi-113    ; sets
+       srfi-128)   ; comparators
+
+  (define default-comparator (make-default-comparator))
+  
+  (define are-equal? (comparator-equality-predicate default-comparator))
+
+  ; macro wrappers around the 'set' constructors, using a default comparator
+  (define-syntax-rule (set* args ...)
+    (set default-comparator args ...))
+
+  (define-syntax-rule (list->set* lst)
+    (list->set default-comparator lst)))
+
 (module digraf
+  ; directed graph
   (digraf
    digraf?
    digraf-edge?
@@ -79,7 +103,10 @@
    digraf-add-vertex!
    digraf-add-vertices!)
 
-  (import chicken scheme)
+  (import chicken 
+          scheme
+          set-utils)
+
   (use srfi-1            ; lists
        srfi-69           ; hash tables
        srfi-113          ; sets
@@ -89,19 +116,7 @@
        data-structures   ; conc
        defstruct         ; simplified record definitions
        matchable         ; pattern matching
-       miscmacros        ; miscellaneous macros (define-syntax-rule)
        ports)            ; input/output (with-output-to-port)
-
-  (define default-comparator (make-default-comparator))
-  
-  (define are-equal? (comparator-equality-predicate default-comparator))
-
-  ; macro wrappers around the 'set' constructors, using a default comparator
-  (define-syntax-rule (set* args ...)
-    (set default-comparator args ...))
-
-  (define-syntax-rule (list->set* lst)
-    (list->set default-comparator lst))
 
   ; types
   (defstruct vertex-edges
@@ -284,17 +299,19 @@
     (match graf
       [($ digraf vertices edges)
        (make-digraf
-         vertices:
+         vertices*:
            (fold*
              (match-lambda* [(vertex ($ vertex-edges inward outward) the-copy)
                (hash-table-set!
                  the-copy
                  vertex
                  (make-vertex-edges inward: (set-copy inward)
-                                    outward: (set-copy outward)))])
+                                    outward: (set-copy outward)))
+               ; (print "vertices so far: " (hash-table->alist the-copy))
+               the-copy])
              (make-hash-table)
              vertices)
-         edges:
+         edges*:
            (set-copy edges))]))
 
   (define (remove-coincident! graf edge)
