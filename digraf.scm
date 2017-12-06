@@ -301,6 +301,10 @@
        (make-digraf
          vertices*:
            (fold*
+             ; We're folding over a hash-table[vertex -> vertex-edges], so
+             ; the match-lambda below will be called with three arguments:
+             ; the key (vertex), the value (vertex-edges), and the accumulator
+             ; (hash-table).
              (match-lambda* [(vertex ($ vertex-edges inward outward) the-copy)
                (hash-table-set!
                  the-copy
