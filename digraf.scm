@@ -180,7 +180,7 @@
 
   (define (make-vertices edges)
     ; Return a hash-table that maps vertices to (inward . outward) edge set
-    ; pairs, calculated from the list of pairs (from . to) 'edges'.
+    ; pairs, calculated from the sequence of pairs (from . to) 'edges'.
     ; For example:
     ;
     ;     (make-vertices '((A . B) (A . C) (B . C)))
