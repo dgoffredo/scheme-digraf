@@ -289,7 +289,7 @@
     ;
     ; would incur a redundant hash-table lookup, so do this instead:
     (match (hash-table-ref (digraf-vertices* graf) vertex)
-      [($ digraf inward outward)
+      [($ vertex-edges inward outward)
        (+ (set-size inward) (set-size outward))]))
 
   (define (digraf-copy graf)
